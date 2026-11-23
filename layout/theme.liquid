@@ -6,43 +6,15 @@
   lang="{{ request.locale.iso_code }}"
   dir="{{ request.locale.direction | default: 'ltr' }}"
 >
-  <!-- Google Brand & Sitelinks Schema -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebSite",
-      "@id": "https://everestecoliving.com/#website",
-      "url": "https://everestecoliving.com/",
-      "name": "Everest Eco Living",
-      "publisher": {
-        "@type": "Organization",
-        "@id": "https://everestecoliving.com/#organization"
-      },
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://everestecoliving.com/search?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    },
-    {
-      "@type": "Organization",
-      "@id": "https://everestecoliving.com/#organization",
-      "name": "Everest Eco Living",
-      "url": "https://everestecoliving.com/",
-      "logo": "https://everestecoliving.com/cdn/shop/files/logo.png"
-    }
-  ]
-}
-</script>
   <head>
-    <!-- Explicit Search Snippet Logo -->
-<meta property="og:image" content="{{ 'logo.png' | file_img_url: '1200x630' }}">
-<meta property="og:image:secure_url" content="{{ 'logo.png' | file_img_url: '1200x630' }}">
-<meta property="og:image:type" content="image/png">
-<meta name="thumbnail" content="{{ 'logo.png' | file_img_url: '600x600' }}">
+    {%- render 'meta-tags' -%}
     <meta name="google-site-verification" content="ksjDb7kJ68wwRdbu4ONDuHuBFXDYtrRv1hMUsOuMPAc" />
+    {%- comment -%}
+      Search snippet thumbnail. The logo is now only a fallback og:image in
+      snippets/meta-tags.liquid, so product and article shares use their own photo.
+    {%- endcomment -%}
+    <meta name="thumbnail" content="https:{{ 'logo.png' | file_img_url: '600x600' }}">
+    {%- render 'seo-site-schema' -%}
     {%- if settings.favicon != blank -%}
       <link
         rel="icon"
@@ -53,7 +25,6 @@
 
     {%- render 'view-transition-opt-in' -%}
 
-    {%- render 'meta-tags' -%}
     {%- render 'stylesheets' -%}
     {%- render 'card-hover-effect-styles' -%}
     {%- render 'fonts' -%}
@@ -106,6 +77,7 @@
     margin-top: 4px;
   }
 </style>
+    {{ 'everest-polish.css' | asset_url | stylesheet_tag }}
   </head>
 
   <body class="page-width-{{ settings.page_width }} card-hover-effect-{{ settings.card_hover_effect }}">
@@ -233,6 +205,15 @@
         data-product-transition="{{ settings.transition_to_main_product }}"
         data-template="{{ template }}"
       >
+        {%- comment -%}
+          The homepage hero (custom liquid) uses <h2> slide titles, so the page had no <h1>.
+          This adds one accessible, screen-reader-visible page heading without touching the hero design.
+        {%- endcomment -%}
+        {%- if request.page_type == 'index' -%}
+          <h1 class="visually-hidden">
+            {{- shop.name | escape }} – Handmade Felted Wool Gifts &amp; Plastic-Free Home Decor
+          </h1>
+        {%- endif -%}
         {{ content_for_layout }}
       </main>
 

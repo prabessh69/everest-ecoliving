@@ -1,0 +1,61 @@
+/*
+ * Everest Eco Living — subtle visual polish.
+ *
+ * Deliberately low-specificity and additive: it does NOT restyle the custom
+ * homepage/about sections (hero slider, Why Choose Us, founders, artisanal
+ * creations) or the inline header overrides in layout/theme.liquid, and it
+ * never touches Judge.me markup (.jdgm-*).
+ */
+
+:root {
+  --everest-plum: #58182d;
+  --everest-blush: #fff2f5;
+}
+
+/* Brand-coloured selection and keyboard focus (focus only shows for keyboard users). */
+::selection {
+  background: rgb(88 24 45 / 0.16);
+}
+
+:where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--everest-plum);
+  outline-offset: 3px;
+}
+
+/* Calmer, balanced heading wraps — no size or font changes. */
+:where(h1, h2, h3) {
+  text-wrap: balance;
+}
+
+/* Product page: comfortable reading measure for descriptions. */
+.product-details :where(.rte) {
+  line-height: 1.65;
+}
+
+.product-details :where(.rte p, .rte li) {
+  max-width: 68ch;
+}
+
+.product-details :where(.rte ul) {
+  padding-inline-start: 1.15em;
+}
+
+.product-details :where(.rte li + li) {
+  margin-block-start: 0.25em;
+}
+
+/* Keep the new size + care blocks visually grouped under the description. */
+.product-details :where(.felt-specs-wrap + .felt-info) {
+  margin-block-start: 4px;
+}
+
+/* Trust-icon tiles (Made with love / Ethically sourced / …): crisper type, no layout change. */
+.product-details :where(.group-block .h6, .group-block h6) {
+  letter-spacing: 0.02em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:focus-within {
+    scroll-behavior: smooth;
+  }
+}

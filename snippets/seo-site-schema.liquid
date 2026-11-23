@@ -1,0 +1,78 @@
+{%- doc -%}
+  Site-wide JSON-LD: one WebSite node and one Organization/Brand node.
+
+  This is the ONLY place Organization schema should be output. Product schema is
+  rendered by sections/product-information.liquid via Shopify's `structured_data`
+  filter (Product + Offer with price, currency and availability), and Judge.me adds
+  review data through its app embed — so neither is duplicated here.
+
+  All dynamic values go through the `json` filter, which escapes quotes, slashes
+  and HTML so merchant-entered text can't break the script block.
+
+  Social profiles come from Theme settings → SEO & seasonal copy → "Social profile URLs".
+
+  @example
+  {% render 'seo-site-schema' %}
+{%- enddoc -%}
+
+{%- liquid
+  assign site_url = shop.url | append: '/'
+  assign org_id = shop.url | append: '/#organization'
+  assign website_id = shop.url | append: '/#website'
+  assign search_target = shop.url | append: '/search?q={search_term_string}'
+
+  if settings.logo != blank
+    assign org_logo = settings.logo | image_url: width: 600 | prepend: 'https:'
+  else
+    assign org_logo = 'logo.png' | file_url | prepend: 'https:'
+  endif
+
+  assign same_as_lines = settings.seo_same_as | newline_to_br | split: '<br />'
+  assign same_as = ''
+  for line in same_as_lines
+    assign url = line | strip
+    if url contains 'https://'
+      assign same_as = same_as | append: ',' | append: url
+    endif
+  endfor
+  assign same_as = same_as | remove_first: ',' | split: ','
+-%}
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": {{ website_id | json }},
+        "url": {{ site_url | json }},
+        "name": {{ shop.name | json }},
+        "inLanguage": {{ request.locale.iso_code | json }},
+        "publisher": { "@id": {{ org_id | json }} },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {{ search_target | json }},
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "Organization",
+        "@id": {{ org_id | json }},
+        "name": {{ shop.name | json }},
+        "url": {{ site_url | json }},
+        "logo": {{ org_logo | json }},
+        {%- if shop.description != blank %}
+          "description": {{ shop.description | strip_html | strip | json }},
+        {%- endif %}
+        {%- if same_as.size > 0 %}
+          "sameAs": {{ same_as | json }},
+        {%- endif %}
+        "brand": {
+          "@type": "Brand",
+          "name": {{ shop.name | json }},
+          "logo": {{ org_logo | json }}
+        }
+      }
+    ]
+  }
+</script>

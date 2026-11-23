@@ -2116,5 +2116,66 @@
         "default": "equal-width-buttons"
       }
     ]
+  },
+  {
+    "name": "SEO & seasonal copy",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Structured data and share-card options. Seasonal copy only applies to products with a seasonal tag and to festive collections, so evergreen products keep their own titles and descriptions."
+      },
+      {
+        "type": "textarea",
+        "id": "seo_same_as",
+        "label": "Social profile URLs",
+        "info": "One full https:// profile URL per line. Used as Organization \"sameAs\" in structured data.",
+        "default": "https://www.facebook.com/profile.php?id=61591661796066\nhttps://www.instagram.com/everestecoliving/"
+      },
+      {
+        "type": "header",
+        "content": "Holiday / seasonal SEO"
+      },
+      {
+        "type": "checkbox",
+        "id": "seo_seasonal_enabled",
+        "label": "Enable seasonal SEO copy",
+        "info": "Turn off after the holiday season. Product SEO fields in Admin are never overwritten.",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "seo_seasonal_tags",
+        "label": "Seasonal product tags",
+        "info": "Comma-separated. Only products with one of these tags get seasonal copy.",
+        "default": "christmas, festive, holiday, xmas"
+      },
+      {
+        "type": "text",
+        "id": "seo_seasonal_collection_handles",
+        "label": "Seasonal collection handles",
+        "info": "Comma-separated. Collections whose title contains \"festive\" or \"christmas\" are included automatically.",
+        "default": "felt-festive-decorations, festive-decorations, christmas"
+      },
+      {
+        "type": "text",
+        "id": "seo_seasonal_product_suffix",
+        "label": "Product title suffix",
+        "info": "Added only when the title stays short (55 characters or fewer) and doesn't already mention Christmas.",
+        "default": "Handmade Christmas Decoration"
+      },
+      {
+        "type": "text",
+        "id": "seo_seasonal_collection_suffix",
+        "label": "Collection title suffix",
+        "default": "Handmade Christmas Gifts"
+      },
+      {
+        "type": "text",
+        "id": "seo_seasonal_description",
+        "label": "Seasonal description sentence",
+        "info": "Appended to short meta descriptions that don't already mention Christmas.",
+        "default": "A plastic-free Christmas gift, handcrafted from felted wool by women artisans in Nepal."
+      }
+    ]
   }
 ]

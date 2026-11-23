@@ -325,17 +325,10 @@
   {% endif %}
 {% endcapture %}
 
-<script type="application/ld+json">
-  {
-    "@context": "http://schema.org",
-    "@type": "Organization",
-    "name": {{ shop.name | json }},
-    {% if settings.logo %}
-      "logo": {{ settings.logo | image_url: width: 500 | prepend: "https:" | json }},
-    {% endif %}
-    "url": {{ request.origin | append: page.url | json }}
-  }
-</script>
+{%- comment -%}
+  Organization JSON-LD moved to snippets/seo-site-schema.liquid (rendered once in <head>)
+  to avoid two competing Organization nodes on every page.
+{%- endcomment -%}
 
 <header-component
   id="header-component"
