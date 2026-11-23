@@ -2146,8 +2146,15 @@
         "type": "text",
         "id": "seo_seasonal_tags",
         "label": "Seasonal product tags",
-        "info": "Comma-separated. Only products with one of these tags get seasonal copy.",
+        "info": "Comma-separated. Products with one of these tags get seasonal copy.",
         "default": "christmas, festive, holiday, xmas"
+      },
+      {
+        "type": "text",
+        "id": "seo_seasonal_title_keywords",
+        "label": "Seasonal product title keywords",
+        "info": "Comma-separated. Untagged products whose title contains one of these words also get seasonal copy. Leave empty to rely on tags only.",
+        "default": "christmas, xmas, santa, reindeer, elf, snowman, gingerbread, stocking, mistletoe, wreath, holly branch, festive, winter, beanie, mitten"
       },
       {
         "type": "text",
@@ -2160,7 +2167,7 @@
         "type": "text",
         "id": "seo_seasonal_product_suffix",
         "label": "Product title suffix",
-        "info": "Added only when the title stays short (55 characters or fewer) and doesn't already mention Christmas.",
+        "info": "Added only when the full browser title stays short and the title doesn't already mention Christmas. If the store name would push it past 65 characters, the store name is left off instead.",
         "default": "Handmade Christmas Decoration"
       },
       {
@@ -2173,7 +2180,7 @@
         "type": "text",
         "id": "seo_seasonal_description",
         "label": "Seasonal description sentence",
-        "info": "Appended to short meta descriptions that don't already mention Christmas.",
+        "info": "Added to meta descriptions that don't already mention Christmas, only when the result stays within 160 characters. Seasonal products without their own SEO description start with this sentence.",
         "default": "A plastic-free Christmas gift, handcrafted from felted wool by women artisans in Nepal."
       }
     ]

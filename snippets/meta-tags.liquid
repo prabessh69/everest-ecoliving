@@ -3,9 +3,14 @@
 
   Seasonal (holiday) copy is opt-in and controlled from
   Theme settings → SEO & seasonal copy. It only applies to:
-    - products carrying one of the configured seasonal tags (e.g. "christmas"), and
+    - products carrying one of the configured seasonal tags (e.g. "christmas"),
+    - products whose title contains one of the configured seasonal keywords
+      (e.g. "reindeer", "gingerbread"), so untagged Christmas pieces still qualify, and
     - collections whose handle is listed, or whose title contains "festive"/"christmas".
   Every other page keeps its evergreen title and description untouched.
+
+  Length guards: titles stay within ~65 characters including the store name, and
+  descriptions within 160 characters, so Google shows them without cutting them off.
 
   @param {object} [product] - The product object, available on product pages for price meta tags.
 {% enddoc %}
@@ -26,7 +31,7 @@
 
 {%- liquid
   assign seo_title = page_title | default: shop.name | strip
-  assign seo_description = page_description | default: shop.description | default: shop.name | strip_html | strip
+  assign seo_description = page_description | strip_html | strip
   assign og_url = canonical_url | default: request.origin
   assign og_type = 'website'
 
@@ -38,14 +43,13 @@
     assign og_url = request.origin
   endif
 
-  # ---- Seasonal (opt-in) copy ------------------------------------------------
+  # ---- Seasonal (opt-in) detection ------------------------------------------
   assign is_seasonal = false
   assign seasonal_title_suffix = ''
 
   if settings.seo_seasonal_enabled
-    assign seasonal_tags = settings.seo_seasonal_tags | downcase | split: ','
-
     if request.page_type == 'product' and product
+      assign seasonal_tags = settings.seo_seasonal_tags | downcase | split: ','
       for tag in product.tags
         assign tag_down = tag | downcase | strip
         for seasonal_tag in seasonal_tags
@@ -55,6 +59,20 @@
           endif
         endfor
       endfor
+
+      # Untagged products: recognise Christmas pieces by their title.
+      unless is_seasonal
+        assign product_title_down = product.title | downcase
+        assign seasonal_keywords = settings.seo_seasonal_title_keywords | downcase | split: ','
+        for seasonal_keyword in seasonal_keywords
+          assign seasonal_keyword_clean = seasonal_keyword | strip
+          if seasonal_keyword_clean != blank and product_title_down contains seasonal_keyword_clean
+            assign is_seasonal = true
+            break
+          endif
+        endfor
+      endunless
+
       assign seasonal_title_suffix = settings.seo_seasonal_product_suffix
 
     elsif request.page_type == 'collection' and collection
@@ -73,35 +91,107 @@
     endif
   endif
 
-  if is_seasonal
-    assign title_down = seo_title | downcase
-    assign suffix_down = seasonal_title_suffix | downcase
-    assign combined_length = seo_title.size | plus: seasonal_title_suffix.size
-    # Only append when it adds information and keeps the title SERP-friendly.
-    if seasonal_title_suffix != blank and combined_length <= 55
-      unless title_down contains 'christmas' or title_down contains suffix_down
-        assign seo_title = seo_title | append: ' | ' | append: seasonal_title_suffix
-      endunless
+  # ---- Description ----------------------------------------------------------
+  # Seasonal products with no SEO description of their own: lead with the gift
+  # sentence, then the product's own words (sizes and the care list are dropped).
+  if is_seasonal and request.page_type == 'product' and product
+    if product.metafields.global.description_tag == blank and settings.seo_seasonal_description != blank
+      assign product_summary = product.description | strip_html | strip_newlines | split: 'Size:' | first | strip
+      assign seo_description = settings.seo_seasonal_description | append: ' ' | append: product_summary | strip
+      if seo_description.size > 160
+        # Cut on a whole word, then add an ellipsis (159 chars + "…" = 160).
+        assign description_words = seo_description | truncate: 159, '' | split: ' '
+        assign partial_word = description_words | last
+        assign seo_description = description_words | join: ' ' | remove_last: partial_word | strip | append: '…'
+      endif
     endif
+  endif
 
+  # Collections without their own description get a specific one instead of
+  # repeating the homepage description on every collection.
+  if seo_description == blank and request.page_type == 'collection' and collection
+    if is_seasonal
+      assign seo_description = 'Shop ' | append: collection.title | append: ': plastic-free Christmas decorations and gifts, handmade from felted wool by women artisans in Nepal.'
+    else
+      assign seo_description = 'Shop ' | append: collection.title | append: ', handmade from felted wool by women artisans in Nepal. Plastic-free decorations and gifts for Australian homes.'
+    endif
+  endif
+
+  if seo_description == blank
+    assign seo_description = shop.description | default: shop.name | strip_html | strip
+  endif
+
+  # Add the seasonal sentence only when it fits within 160 characters.
+  if is_seasonal and settings.seo_seasonal_description != blank
     assign description_down = seo_description | downcase
-    if settings.seo_seasonal_description != blank and seo_description.size < 180
+    assign combined_description_length = seo_description.size | plus: 1 | plus: settings.seo_seasonal_description.size
+    if combined_description_length <= 160
       unless description_down contains 'christmas'
         assign seo_description = seo_description | append: ' ' | append: settings.seo_seasonal_description
       endunless
     endif
   endif
 
+  # ---- Title ----------------------------------------------------------------
+  assign title_brand_suffix = ' – ' | append: shop.name
+  assign show_brand_in_title = true
+  if seo_title contains shop.name
+    assign show_brand_in_title = false
+  endif
+
+  if is_seasonal and seasonal_title_suffix != blank
+    assign title_down = seo_title | downcase
+    assign suffix_down = seasonal_title_suffix | downcase
+    unless title_down contains 'christmas' or title_down contains suffix_down
+      assign seasonal_title = seo_title | append: ' | ' | append: seasonal_title_suffix
+      assign seasonal_title_with_brand_length = seasonal_title.size | plus: title_brand_suffix.size
+      if show_brand_in_title == false or seasonal_title_with_brand_length <= 65
+        assign seo_title = seasonal_title
+      elsif seasonal_title.size <= 60
+        # Keep the gift wording and drop the store name (still sent as og:site_name).
+        assign seo_title = seasonal_title
+        assign show_brand_in_title = false
+      endif
+    endunless
+  endif
+
+  # ---- Robots: keep sorted / filtered / tag views of a collection out of the index
+  assign robots_noindex = false
+  if request.page_type == 'collection' and collection
+    if current_tags or collection.sort_by != blank
+      assign robots_noindex = true
+    endif
+    for filter in collection.filters
+      if filter.active_values.size > 0 or filter.min_value.value != blank or filter.max_value.value != blank
+        assign robots_noindex = true
+        break
+      endif
+    endfor
+  endif
+
+  # ---- Locale: "en" + store country => "en_AU" ------------------------------
+  assign og_locale = request.locale.iso_code | replace: '-', '_'
+  unless og_locale contains '_'
+    if localization.country.iso_code != blank
+      assign og_locale = og_locale | append: '_' | append: localization.country.iso_code
+    endif
+  endunless
+
   # ---- Share image: page image first, logo only as a fallback -----------------
+  # Declared width/height always match the file actually served.
+  assign og_image_url = ''
   if page_image
-    assign og_image_url = page_image | image_url: width: 1200 | prepend: 'https:'
-    assign og_image_width = 1200
-    assign og_image_height = 1200 | divided_by: page_image.aspect_ratio | round
+    assign og_image_width = page_image.width | default: 1200 | at_most: 1200
+    assign og_image_url = page_image | image_url: width: og_image_width | prepend: 'https:'
+    assign og_image_height = og_image_width | divided_by: page_image.aspect_ratio | round
     assign og_image_alt = page_image.alt | default: seo_title
+  elsif settings.logo != blank
+    assign og_image_width = settings.logo.width | default: 1200 | at_most: 1200
+    assign og_image_url = settings.logo | image_url: width: og_image_width | prepend: 'https:'
+    assign og_image_height = og_image_width | divided_by: settings.logo.aspect_ratio | round
+    assign og_image_alt = shop.name
   else
-    assign og_image_url = 'logo.png' | file_img_url: '1200x630' | prepend: 'https:'
-    assign og_image_width = 1200
-    assign og_image_height = 630
+    assign og_image_url = 'logo.png' | file_img_url: '1200x' | prepend: 'https:'
     assign og_image_alt = shop.name
   endif
 -%}
@@ -128,7 +218,7 @@
 >
 <meta
   property="og:locale"
-  content="{{ request.locale.iso_code | replace: '-', '_' }}"
+  content="{{ og_locale }}"
 >
 <meta
   property="og:image"
@@ -138,26 +228,37 @@
   property="og:image:secure_url"
   content="{{ og_image_url }}"
 >
-<meta
-  property="og:image:width"
-  content="{{ og_image_width }}"
->
-<meta
-  property="og:image:height"
-  content="{{ og_image_height }}"
->
+{%- if og_image_width and og_image_height %}
+  <meta
+    property="og:image:width"
+    content="{{ og_image_width }}"
+  >
+  <meta
+    property="og:image:height"
+    content="{{ og_image_height }}"
+  >
+{%- endif %}
 <meta
   property="og:image:alt"
   content="{{ og_image_alt | escape }}"
 >
 
 {%- if request.page_type == 'product' and product -%}
+  {%- assign og_price = product.selected_or_first_available_variant.price | money_without_currency | strip_html | remove: ',' -%}
   <meta
     property="og:price:amount"
-    content="{{ product.selected_or_first_available_variant.price | money_without_currency | strip_html }}"
+    content="{{ og_price }}"
   >
   <meta
     property="og:price:currency"
+    content="{{ cart.currency.iso_code }}"
+  >
+  <meta
+    property="product:price:amount"
+    content="{{ og_price }}"
+  >
+  <meta
+    property="product:price:currency"
     content="{{ cart.currency.iso_code }}"
   >
 {%- endif -%}
@@ -179,13 +280,20 @@
   {{- seo_title | escape -}}
   {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' | escape }}"{% endif -%}
   {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
-  {%- unless seo_title contains shop.name %} &ndash; {{ shop.name | escape }}{% endunless -%}
+  {%- if show_brand_in_title %} &ndash; {{ shop.name | escape }}{% endif -%}
 </title>
 
 <link
   rel="canonical"
   href="{{ canonical_url }}"
 >
+
+{%- if robots_noindex %}
+  <meta
+    name="robots"
+    content="noindex, follow"
+  >
+{%- endif %}
 
 {%- if seo_description != blank -%}
   <meta
