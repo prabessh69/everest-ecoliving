@@ -1,39 +1,43 @@
 /*
- * Everest Eco Living — brand polish layer.
+ * Everest Eco Living — "The Wool Room" brand layer.
  *
- * Direction: "hand-felted, gift-wrapped". The felt photography carries the colour;
- * the chrome stays quiet and matte. One signature: a running stitch (a dashed
- * rose-thread line) that appears only where handwork is described — the size card
- * on product pages and under the title on story pages (artisanal, care guide).
+ * Direction: a small artisan gallery. Felt pieces are presented like prints
+ * mounted on handmade wool paper: unbleached parchment page, paper mats with
+ * a fine oat frame, warm charcoal type, plum ink from the logo, and a berry
+ * running stitch wherever handwork is described.
  *
- * Rules are wrapped in :where() so they have zero specificity: they style elements
- * that would otherwise just inherit, but any setting chosen in the theme editor
- * still wins.
+ * How it fits the Theme Editor:
+ *   - Page colours, buttons and card mats/frames are real theme settings
+ *     (Theme settings → Colors; card blocks in each template). This file never
+ *     overrides them, so the customiser keeps full control.
+ *   - Rules here are mostly wrapped in :where() (zero specificity), so any
+ *     setting chosen in the editor still wins. Only the card hover/focus frame
+ *     uses normal specificity, because it must beat the theme's .border-style.
  *
- * Deliberately NOT touched: the custom homepage/about sections (hero slider,
- * Why Choose Us, founders, artisanal creations), the collection banner and
- * "Coming soon" card, the inline header overrides in layout/theme.liquid, and all
- * Judge.me markup (.jdgm-*).
+ * Deliberately NOT touched: the custom homepage/about sections (hero slider
+ * internals, Why Choose Us, founders, artisanal creations), the inline header
+ * styles in layout/theme.liquid, and all Judge.me markup (.jdgm-*).
  */
 
 :root {
-  /* Brand palette — every value except gum leaf already exists in the store. */
-  --everest-plum: #58182d;        /* logo ink: prices, links, focus */
-  --everest-blush: #fff2f5;       /* felt surface (palette color6) */
-  --everest-wool: #f1ede8;        /* undyed wool: photo wells (palette color4) */
-  --everest-thread: #c05a67;      /* rose thread: the stitch, nothing else */
-  --everest-gum: #4f6b5a;         /* gum leaf: care / eco icons (5.6:1 on white) */
-  --everest-line: rgb(88 24 45 / 0.12);
+  --everest-parchment: #f7f2ea;  /* unbleached wool page (palette background) */
+  --everest-mat: #fcf9f4;        /* paper mat behind product photos */
+  --everest-line: #e3d8c6;       /* oat frame line */
+  --everest-charcoal: #2b2421;   /* warm charcoal text (palette foreground) */
+  --everest-plum: #58182d;       /* logo ink: buttons, prices, hover frames */
+  --everest-berry: #9b3654;      /* berry thread: the stitch, focus accents */
+  --everest-blush: #fff2f5;      /* felt surface (palette color6, header band) */
+  --everest-gum: #4f6b5a;        /* gum leaf: care / eco icons */
 
-  /* Running stitch: 9px stitch, 6px gap. Used as a background so dash length is
-     consistent across browsers (border-style: dashed is not). */
-  --everest-stitch: linear-gradient(90deg, var(--everest-thread) 60%, transparent 0);
+  /* Running stitch: 9px stitch, 6px gap. Drawn as a background so the dash
+     length is identical in every browser (border-style: dashed is not). */
+  --everest-stitch: linear-gradient(90deg, var(--everest-berry) 60%, transparent 0);
 }
 
 /* ---------------------------------------------------------------- Base */
 
 ::selection {
-  background: rgb(88 24 45 / 0.16);
+  background: rgb(155 54 84 / 0.18);
 }
 
 /* Keyboard focus only — mouse clicks don't show a ring. */
@@ -42,12 +46,25 @@
   outline-offset: 3px;
 }
 
-:where(h1, h2, h3) {
+/* Instrument Serif sets better slightly tightened at display sizes. */
+:where(h1, h2, h3, .h1, .h2, .h3) {
+  letter-spacing: -0.01em;
   text-wrap: balance;
 }
 
 :where(p, li) {
   text-wrap: pretty;
+}
+
+/* Body-copy links: plum ink with a fine underline that thickens on hover. */
+:where(.rte a, .text-block a) {
+  color: var(--everest-plum);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+:where(.rte a:hover, .text-block a:hover) {
+  text-decoration-thickness: 2px;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -56,22 +73,31 @@
   }
 }
 
-/* ------------------------------------------------------- Product cards */
+/* ------------------------------------------- Product cards: gallery mount */
 
-/* Undyed-wool well behind each photo, so cut-out or contained shots sit on
-   something soft instead of stark white. Invisible behind full-bleed photos. */
+/* The mat and frame come from each card block's settings (background, border).
+   Here the photo is "printed" onto the mat: multiply turns the cool grey studio
+   backdrop warm while felt colours and darks stay true. `isolation` keeps the
+   blend inside the card. */
 :where(.product-card .card-gallery) {
-  background-color: var(--everest-wool);
-  border-radius: var(--product-corner-radius, 10px);
+  background-color: var(--everest-mat);
+  isolation: isolate;
 }
 
-/* Title: quiet sans, a touch heavier than body so it reads before the price. */
+:where(.product-card .card-gallery) :where(img) {
+  mix-blend-mode: multiply;
+}
+
+/* Title: the serif comes from the card's title block settings; this adds the
+   hover thread underline without moving anything. */
 :where(.product-card .text-block [role='heading']) {
-  font-weight: 500;
-  letter-spacing: 0.005em;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
 }
 
-/* Price in logo plum with even-width figures, so $8.00 and $16.00 align down a grid. */
+/* Price in plum with even-width figures, so $8.00 and $16.00 align down a grid. */
 :where(.product-card .price, .product-details .price) {
   color: var(--everest-plum);
   font-variant-numeric: tabular-nums lining-nums;
@@ -81,10 +107,58 @@
   font-variant-numeric: tabular-nums lining-nums;
 }
 
+/* Hover / keyboard focus: the frame turns plum and the title gets its thread.
+   No lift or scale — a calm, immediate response. */
+.product-card .product-card__content {
+  transition: border-color 0.2s ease;
+}
+
+:where(.product-card .text-block [role='heading']) {
+  transition: text-decoration-color 0.2s ease;
+}
+
+@media (hover: hover) {
+  .product-card:hover .product-card__content {
+    border-color: var(--everest-plum);
+  }
+
+  .product-card:hover .text-block [role='heading'] {
+    text-decoration-color: var(--everest-berry);
+  }
+}
+
+.product-card:has(:focus-visible) .product-card__content {
+  border-color: var(--everest-plum);
+  box-shadow: 0 0 0 1px var(--everest-plum);
+}
+
+.product-card:has(:focus-visible) .text-block [role='heading'] {
+  text-decoration-color: var(--everest-berry);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card .product-card__content,
+  .product-card .text-block [role='heading'] {
+    transition: none;
+  }
+}
+
 /* ---------------------------------------------------------- Product page */
 
+/* Main gallery gets the same mount as the cards. */
+:where(.product-information__media .product-media-container) {
+  background-color: var(--everest-mat);
+  box-shadow: inset 0 0 0 1px var(--everest-line);
+  isolation: isolate;
+}
+
+:where(.product-information__media .product-media-container) :where(img) {
+  mix-blend-mode: multiply;
+}
+
 :where(.product-details h1) {
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
 }
 
 /* Comfortable reading measure for descriptions. */
@@ -116,8 +190,8 @@
 
 /* ------------------------------------------------- Story pages (page.content) */
 
-/* Used by the artisanal-creations and care-guide pages: a short running stitch
-   under the page title, then a readable, centred column of the page's own text. */
+/* Artisanal-creations and care-guide pages: a short running stitch under the
+   page title, then a readable, centred column of the page's own text. */
 :where(.page-content) {
   max-width: 68ch;
   margin-inline: auto;
@@ -139,16 +213,17 @@
 }
 
 :where(.page-content) :where(img) {
-  border-radius: 10px;
+  border-radius: 4px;
   height: auto;
 }
 
-/* Link colour comes from the page-content block's own setting; only the underline is refined. */
-:where(.page-content) :where(a) {
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.2em;
-}
+/* --------------------------------------------------------------- Footer */
 
-:where(.page-content) :where(a:hover) {
-  text-decoration-thickness: 2px;
+/* A running stitch where the parchment page meets the oat footer band. */
+.page-wrapper > footer::before {
+  content: '';
+  display: block;
+  height: 2px;
+  background: var(--everest-stitch) 0 0 / 15px 2px repeat-x;
+  opacity: 0.55;
 }
