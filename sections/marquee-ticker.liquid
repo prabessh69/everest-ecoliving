@@ -1,0 +1,80 @@
+<div class="marquee-wrapper">
+  <div class="marquee-track">
+    <div class="marquee-content">
+      <span>✦ 100% WOMEN MADE</span>
+      <span>✦ FAIR TRADE</span>
+      <span>✦ PURE NEW ZEALAND WOOL</span>
+      <span>✦ ETHICALLY HANDCRAFTED</span>
+      <span>✦ SUSTAINABLE & ZERO WASTE</span>
+      <span>✦ ARTISANAL HERITAGE</span>
+      <span>✦ DIGNIFIED LIVING WAGES</span>
+    </div>
+    <!-- Duplicate content to create a seamless infinite loop -->
+    <div class="marquee-content" aria-hidden="true">
+      <span>✦ 100% WOMEN MADE</span>
+      <span>✦ FAIR TRADE</span>
+      <span>✦ PURE NEW ZEALAND WOOL</span>
+      <span>✦ ETHICALLY HANDCRAFTED</span>
+      <span>✦ SUSTAINABLE & ZERO WASTE</span>
+      <span>✦ ARTISANAL HERITAGE</span>
+      <span>✦ DIGNIFIED LIVING WAGES</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .marquee-wrapper {
+    width: 100%;
+    overflow: hidden;
+    /* Gradient transitions smoothly from upper purple to lower soft pink */
+    background: linear-gradient(180deg, #F3D8FF 0%, #FFF2F5 100%);
+    padding: 18px 0;
+    /* Added thin black top and bottom borders */
+    border-top: 1px solid #000000;
+    border-bottom: 1px solid #000000;
+    white-space: nowrap;
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee-scroll 28s linear infinite;
+  }
+
+  .marquee-content {
+    display: flex;
+    align-items: center;
+    gap: 45px;
+    padding-right: 45px;
+  }
+
+  .marquee-content span {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #58182D; /* Deep plum text for high contrast and readability */
+    font-family: inherit;
+  }
+
+  @keyframes marquee-scroll {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Marquee Ticker",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Marquee Ticker"
+    }
+  ]
+}
+{% endschema %}
