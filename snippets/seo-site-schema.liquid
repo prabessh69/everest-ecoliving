@@ -38,6 +38,12 @@
   endfor
   assign same_as = same_as | remove_first: ',' | split: ','
 
+  # strip_html leaves entities like "&amp;"; decode so JSON-LD carries a plain "&".
+  assign org_description_html = shop.description | strip_html | strip
+  capture org_description
+    render 'decode-entities', text: org_description_html
+  endcapture
+
   # ---- Breadcrumbs (Home › parent › current page) for Google's result trail.
   # Product pages use the collection they were opened from, otherwise their first
   # real collection. The last item is always the page's canonical URL.
@@ -97,8 +103,8 @@
         "name": {{ shop.name | json }},
         "url": {{ site_url | json }},
         "logo": {{ org_logo | json }},
-        {%- if shop.description != blank %}
-          "description": {{ shop.description | strip_html | strip | json }},
+        {%- if org_description != blank %}
+          "description": {{ org_description | json }},
         {%- endif %}
         {%- if same_as.size > 0 %}
           "sameAs": {{ same_as | json }},

@@ -30,8 +30,16 @@
 >
 
 {%- liquid
-  assign seo_title = page_title | default: shop.name | strip
-  assign seo_description = page_description | strip_html | strip
+  # Decode entities up front so "&" counts as one character in the length guards
+  # and is escaped exactly once on output (no "&amp;amp;" in titles).
+  capture seo_title
+    render 'decode-entities', text: page_title
+  endcapture
+  assign seo_title = seo_title | default: shop.name | strip
+  capture seo_description
+    render 'decode-entities', text: page_description
+  endcapture
+  assign seo_description = seo_description | strip_html | strip
   assign og_url = canonical_url | default: request.origin
   assign og_type = 'website'
 
@@ -97,6 +105,10 @@
   if is_seasonal and request.page_type == 'product' and product
     if product.metafields.global.description_tag == blank and settings.seo_seasonal_description != blank
       assign product_summary = product.description | strip_html | strip_newlines | split: 'Size:' | first | strip
+      # strip_html keeps entities such as "&amp;" and "&nbsp;"; decode them.
+      capture product_summary
+        render 'decode-entities', text: product_summary
+      endcapture
       assign seo_description = settings.seo_seasonal_description | append: ' ' | append: product_summary | strip
       if seo_description.size > 160
         # Cut on a whole word, then add an ellipsis (159 chars + "…" = 160).
@@ -118,7 +130,10 @@
   endif
 
   if seo_description == blank
-    assign seo_description = shop.description | default: shop.name | strip_html | strip
+    assign shop_description = shop.description | default: shop.name | strip_html | strip
+    capture seo_description
+      render 'decode-entities', text: shop_description
+    endcapture
   endif
 
   # Add the seasonal sentence only when it fits within 160 characters.
@@ -194,11 +209,27 @@
     assign og_image_url = 'logo.png' | file_img_url: '1200x' | prepend: 'https:'
     assign og_image_alt = shop.name
   endif
+
+  # ---- Final pass: plain text in, single `| escape` on output ----------------
+  # Collection titles, image alt text and the shop name join the strings above
+  # after the first decode, so decode once more right before printing.
+  capture seo_title
+    render 'decode-entities', text: seo_title
+  endcapture
+  capture seo_description
+    render 'decode-entities', text: seo_description
+  endcapture
+  capture og_image_alt
+    render 'decode-entities', text: og_image_alt
+  endcapture
+  capture shop_name_text
+    render 'decode-entities', text: shop.name
+  endcapture
 -%}
 
 <meta
   property="og:site_name"
-  content="{{ shop.name | escape }}"
+  content="{{ shop_name_text | escape }}"
 >
 <meta
   property="og:url"
@@ -280,7 +311,7 @@
   {{- seo_title | escape -}}
   {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' | escape }}"{% endif -%}
   {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
-  {%- if show_brand_in_title %} &ndash; {{ shop.name | escape }}{% endif -%}
+  {%- if show_brand_in_title %} &ndash; {{ shop_name_text | escape }}{% endif -%}
 </title>
 
 <link

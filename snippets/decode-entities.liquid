@@ -1,0 +1,25 @@
+{%- doc -%}
+  Turns HTML entities back into plain characters, so text that is already escaped
+  (Shopify-escaped titles, `strip_html` output from rich-text descriptions, or a
+  literal "&amp;" typed into an SEO field) can be escaped exactly once on output.
+  Without this, "Ornaments &amp; Decor" escaped again shows as "&amp;" in titles.
+
+  Always escape the result where it is printed (e.g. `| escape`).
+
+  @param {string} text - The text to decode.
+
+  @example
+  {%- capture clean_title -%}{%- render 'decode-entities', text: page_title -%}{%- endcapture -%}
+{%- enddoc -%}
+{%- liquid
+  assign decoded = text | default: ''
+  # "&amp;amp;" first (double-escaped), then "&amp;", so nothing is left half-decoded.
+  assign decoded = decoded | replace: '&amp;amp;', '&' | replace: '&amp;', '&'
+  assign decoded = decoded | replace: '&nbsp;', ' ' | replace: '&#160;', ' '
+  assign decoded = decoded | replace: '&quot;', '"' | replace: '&#34;', '"'
+  assign decoded = decoded | replace: '&#39;', "'" | replace: '&#x27;', "'" | replace: '&apos;', "'"
+  assign decoded = decoded | replace: '&rsquo;', '’' | replace: '&lsquo;', '‘' | replace: '&rdquo;', '”' | replace: '&ldquo;', '“'
+  assign decoded = decoded | replace: '&ndash;', '–' | replace: '&mdash;', '—' | replace: '&hellip;', '…'
+  assign decoded = decoded | replace: '&lt;', '<' | replace: '&gt;', '>'
+  echo decoded
+-%}
