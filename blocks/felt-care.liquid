@@ -83,7 +83,6 @@
         href="{{ block_settings.guide_link }}"
       >
         {{- block_settings.guide_link_label | escape -}}
-        <span aria-hidden="true"> &rarr;</span>
       </a>
     {%- endif -%}
   </div>
@@ -91,8 +90,9 @@
 
 {% stylesheet %}
   .felt-info {
-    --felt-info-accent: #58182d;
-    --felt-info-surface: rgb(255 242 245 / 0.6);
+    --felt-info-accent: var(--everest-plum, #58182d);
+    --felt-info-icon: var(--everest-gum, #4f6b5a);
+    --felt-info-surface: var(--everest-blush, #fff2f5);
     --felt-info-line: rgb(88 24 45 / 0.14);
 
     width: 100%;
@@ -110,8 +110,6 @@
     padding-block: 1rem;
     cursor: pointer;
     list-style: none;
-    font-weight: 600;
-    letter-spacing: 0.01em;
   }
 
   .felt-info__summary::-webkit-details-marker {
@@ -126,12 +124,17 @@
 
   .felt-info__icon {
     display: inline-flex;
-    color: var(--felt-info-accent);
+    color: var(--felt-info-icon);
     flex: none;
   }
 
   .felt-info__title {
     flex: 1 1 auto;
+    font-family: var(--font-heading--family);
+    font-size: 1.125rem;
+    font-weight: var(--font-heading--weight, 400);
+    line-height: 1.2;
+    color: var(--felt-info-accent);
   }
 
   .felt-info__caret {
@@ -175,10 +178,7 @@
   .felt-info__label {
     display: block;
     margin-block-end: 0.2rem;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-weight: 500;
     color: var(--felt-info-accent);
   }
 

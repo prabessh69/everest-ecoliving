@@ -12,7 +12,8 @@
     custom.display_details  Multi-line text    e.g. "Stands freely on a shelf or mantel"
 
   When none are filled in, an optional honest fallback note is shown instead
-  (or nothing at all, if the fallback is turned off).
+  (or nothing at all, if the fallback is turned off, or if the product description
+  already states a size).
 {%- enddoc -%}
 
 {%- liquid
@@ -33,9 +34,22 @@
   if dimensions_text != blank or has_structured or hanging != blank or display != blank
     assign has_data = true
   endif
+
+  # Most product descriptions already state "Size: Length … | Breadth …". In that case the
+  # "sizes vary, just ask us" fallback would contradict the page, so it is skipped.
+  assign description_text = product_resource.description | strip_html | downcase
+  assign description_has_size = false
+  if description_text contains 'size:' or description_text contains 'length:'
+    assign description_has_size = true
+  endif
+
+  assign show_fallback_note = false
+  if block_settings.show_fallback and description_has_size == false
+    assign show_fallback_note = true
+  endif
 -%}
 
-{%- if has_data or block_settings.show_fallback -%}
+{%- if has_data or show_fallback_note -%}
   <div
     class="felt-specs-wrap spacing-style"
     style="{% render 'spacing-style', settings: block_settings %}"
@@ -125,24 +139,27 @@
     width: 100%;
   }
 
+  /* A felt patch: blush surface with a running stitch sewn just inside the edge. */
   .felt-specs {
-    --felt-specs-accent: #58182d;
-    --felt-specs-surface: rgb(255 242 245 / 0.7);
+    --felt-specs-accent: var(--everest-plum, #58182d);
+    --felt-specs-surface: var(--everest-blush, #fff2f5);
     --felt-specs-line: rgb(88 24 45 / 0.12);
+    --felt-specs-thread: rgb(192 90 103 / 0.55);
 
     width: 100%;
-    padding: 1rem 1.125rem;
-    border: 1px solid var(--felt-specs-line);
-    border-radius: 12px;
+    padding: 1.25rem 1.375rem;
+    border-radius: 14px;
     background: var(--felt-specs-surface);
+    outline: 1.5px dashed var(--felt-specs-thread);
+    outline-offset: -7px;
   }
 
   .felt-specs__heading {
-    margin: 0 0 0.625rem;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    margin: 0 0 0.75rem;
+    font-family: var(--font-heading--family);
+    font-size: 1.125rem;
+    font-weight: var(--font-heading--weight, 400);
+    line-height: 1.2;
     color: var(--felt-specs-accent);
   }
 
@@ -165,12 +182,14 @@
   }
 
   .felt-specs__row dt {
-    font-weight: 600;
+    font-weight: 500;
+    color: var(--felt-specs-accent);
   }
 
   .felt-specs__row dd {
     margin: 0;
     line-height: 1.5;
+    font-variant-numeric: tabular-nums lining-nums;
   }
 
   .felt-specs__note {
@@ -269,6 +288,7 @@
       "type": "checkbox",
       "id": "show_fallback",
       "label": "Show fallback note",
+      "info": "Hidden automatically when the product description already includes a size.",
       "default": true
     },
     {

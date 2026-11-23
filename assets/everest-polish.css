@@ -1,33 +1,93 @@
 /*
- * Everest Eco Living — subtle visual polish.
+ * Everest Eco Living — brand polish layer.
  *
- * Deliberately low-specificity and additive: it does NOT restyle the custom
- * homepage/about sections (hero slider, Why Choose Us, founders, artisanal
- * creations) or the inline header overrides in layout/theme.liquid, and it
- * never touches Judge.me markup (.jdgm-*).
+ * Direction: "hand-felted, gift-wrapped". The felt photography carries the colour;
+ * the chrome stays quiet and matte. One signature: a running stitch (a dashed
+ * rose-thread line) that appears only where handwork is described — the size card
+ * on product pages and under the title on story pages (artisanal, care guide).
+ *
+ * Rules are wrapped in :where() so they have zero specificity: they style elements
+ * that would otherwise just inherit, but any setting chosen in the theme editor
+ * still wins.
+ *
+ * Deliberately NOT touched: the custom homepage/about sections (hero slider,
+ * Why Choose Us, founders, artisanal creations), the collection banner and
+ * "Coming soon" card, the inline header overrides in layout/theme.liquid, and all
+ * Judge.me markup (.jdgm-*).
  */
 
 :root {
-  --everest-plum: #58182d;
-  --everest-blush: #fff2f5;
+  /* Brand palette — every value except gum leaf already exists in the store. */
+  --everest-plum: #58182d;        /* logo ink: prices, links, focus */
+  --everest-blush: #fff2f5;       /* felt surface (palette color6) */
+  --everest-wool: #f1ede8;        /* undyed wool: photo wells (palette color4) */
+  --everest-thread: #c05a67;      /* rose thread: the stitch, nothing else */
+  --everest-gum: #4f6b5a;         /* gum leaf: care / eco icons (5.6:1 on white) */
+  --everest-line: rgb(88 24 45 / 0.12);
+
+  /* Running stitch: 9px stitch, 6px gap. Used as a background so dash length is
+     consistent across browsers (border-style: dashed is not). */
+  --everest-stitch: linear-gradient(90deg, var(--everest-thread) 60%, transparent 0);
 }
 
-/* Brand-coloured selection and keyboard focus (focus only shows for keyboard users). */
+/* ---------------------------------------------------------------- Base */
+
 ::selection {
   background: rgb(88 24 45 / 0.16);
 }
 
+/* Keyboard focus only — mouse clicks don't show a ring. */
 :where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
   outline: 2px solid var(--everest-plum);
   outline-offset: 3px;
 }
 
-/* Calmer, balanced heading wraps — no size or font changes. */
 :where(h1, h2, h3) {
   text-wrap: balance;
 }
 
-/* Product page: comfortable reading measure for descriptions. */
+:where(p, li) {
+  text-wrap: pretty;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:focus-within {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ------------------------------------------------------- Product cards */
+
+/* Undyed-wool well behind each photo, so cut-out or contained shots sit on
+   something soft instead of stark white. Invisible behind full-bleed photos. */
+:where(.product-card .card-gallery) {
+  background-color: var(--everest-wool);
+  border-radius: var(--product-corner-radius, 10px);
+}
+
+/* Title: quiet sans, a touch heavier than body so it reads before the price. */
+:where(.product-card .text-block [role='heading']) {
+  font-weight: 500;
+  letter-spacing: 0.005em;
+}
+
+/* Price in logo plum with even-width figures, so $8.00 and $16.00 align down a grid. */
+:where(.product-card .price, .product-details .price) {
+  color: var(--everest-plum);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+:where(.product-card .compare-at-price, .product-details .compare-at-price) {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* ---------------------------------------------------------- Product page */
+
+:where(.product-details h1) {
+  letter-spacing: -0.01em;
+}
+
+/* Comfortable reading measure for descriptions. */
 .product-details :where(.rte) {
   line-height: 1.65;
 }
@@ -44,18 +104,51 @@
   margin-block-start: 0.25em;
 }
 
-/* Keep the new size + care blocks visually grouped under the description. */
+/* Keep the size card and care panel reading as one group under the description. */
 .product-details :where(.felt-specs-wrap + .felt-info) {
-  margin-block-start: 4px;
+  margin-block-start: 8px;
 }
 
-/* Trust-icon tiles (Made with love / Ethically sourced / …): crisper type, no layout change. */
+/* Trust-icon tiles (Made with love / Ethically sourced / …): crisper type. */
 .product-details :where(.group-block .h6, .group-block h6) {
   letter-spacing: 0.02em;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  html:focus-within {
-    scroll-behavior: smooth;
-  }
+/* ------------------------------------------------- Story pages (page.content) */
+
+/* Used by the artisanal-creations and care-guide pages: a short running stitch
+   under the page title, then a readable, centred column of the page's own text. */
+:where(.page-content) {
+  max-width: 68ch;
+  margin-inline: auto;
+  line-height: 1.7;
+}
+
+:where(.page-content)::before {
+  content: '';
+  display: block;
+  width: 96px;
+  height: 2px;
+  margin: 0 auto 2rem;
+  background: var(--everest-stitch) 0 0 / 15px 2px repeat-x;
+}
+
+:where(.page-content) :where(h2, h3) {
+  margin-block: 2em 0.5em;
+  color: var(--everest-plum);
+}
+
+:where(.page-content) :where(img) {
+  border-radius: 10px;
+  height: auto;
+}
+
+/* Link colour comes from the page-content block's own setting; only the underline is refined. */
+:where(.page-content) :where(a) {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+:where(.page-content) :where(a:hover) {
+  text-decoration-thickness: 2px;
 }
