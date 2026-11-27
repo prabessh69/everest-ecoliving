@@ -163,9 +163,9 @@
         "group_mfTd9p"
       ],
       "custom_css": [
-        ".collection-card{margin:auto;background:#F5EFE6;border:1px solid #1F3A2E33;border-radius:14px;overflow:hidden;text-align:center}",
-        ".collection-card__content{padding:18px;border-top:2px solid #B85D3B}",
-        ".collection-card__title{color:#1F3A2E;letter-spacing:.02em}"
+        ".collection-card {margin: auto; background: #f5efe6; border: 1px solid #1f3a2e33; border-radius: 14px; overflow: hidden; text-align: center;}",
+        ".collection-card__content {padding: 18px; border-top: 2px solid #b85d3b;}",
+        ".collection-card__title {color: #1f3a2e; letter-spacing: 0.02em;}"
       ],
       "name": "t:names.collection_list",
       "settings": {
@@ -173,7 +173,8 @@
           "pet-eco-living",
           "felt-festive-decorations",
           "child-eco-living",
-          "felt-cat-caves"
+          "felt-cat-caves",
+          "christmas-ornament-bundles"
         ],
         "layout_type": "bento",
         "carousel_on_mobile": true,
